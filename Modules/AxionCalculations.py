@@ -1,6 +1,6 @@
 import numpy as np
 from numba import njit
-import StatsFunctions as St
+import Modules.StatsFunctions as St
 
 @njit
 def gsto_nb(rho_s, rho_o, alpha_s, alpha_o, m_a, phi, delta):

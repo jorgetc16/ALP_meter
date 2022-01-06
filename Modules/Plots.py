@@ -128,8 +128,8 @@ def plot_periodogram(source, file_name, label_name):
         label_name : string
             The name of the source to appear in the plot, e.g. "J2170+1244".
     """
-    df_PLS  = pd.read_csv("Data/pLS_"+source+".dat",delim_whitespace=True, header=None)
-    df_FAP  = pd.read_csv("Data/pLS_boots_"+source+".dat",delim_whitespace=True, header=None)
+    df_PLS  = pd.read_csv("Output/Files/pLS_"+source+".dat",delim_whitespace=True, header=None)
+    df_FAP  = pd.read_csv("Output/Files/pLS_boots_"+source+".dat",delim_whitespace=True, header=None)
 
     nu  = df_PLS[0] 
     LS  = df_PLS[1]

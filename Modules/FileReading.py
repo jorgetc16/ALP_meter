@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-from StatsFunctions import sigray
+from Modules.StatsFunctions import sigray
 
 
 def ReadAndCompileMultiple(filelist,program):
@@ -33,14 +33,24 @@ def ReadAndCompileMultiple(filelist,program):
         print("The second argument must be 0 for peak_finder.f or 1 for phi_95.f")
         return 
         
+    df  = pd.read_csv("InputData/"+filelist[0]+".dat",delim_whitespace=True, header=None)
+    Size=[]
+    Size.append(str(len(df[0])))
 
+    os.system("sed -i 's/npuls1=100/npuls1="+Size[0]+"/g' Modules/"+fortran+".f")
     os.system("sed -i 's/XXXXX.dat/"+filelist[0]+".dat/g' Modules/"+fortran+".f")
     os.system("gfortran -o FortranBinaries/"+filelist[0]+"_"+fortran+".out Modules/"+fortran+".f `cernlib -safe mathlib`")
 
     for i in range(len(filelist)-1):
+        df  = pd.read_csv("InputData/"+filelist[i+1]+".dat",delim_whitespace=True, header=None)
+        Size.append(str(len(df[0])))
+
+        os.system("sed -i 's/npuls1="+Size[i]+"/npuls1="+Size[i+1]+"/g' Modules/"+fortran+".f")    
         os.system("sed -i 's/"+filelist[i]+".dat/"+filelist[i+1]+".dat/g' Modules/"+fortran+".f")
         os.system("gfortran -o FortranBinaries/"+filelist[i+1]+"_"+fortran+".out Modules/"+fortran+".f `cernlib -safe mathlib`")
-  
+    
+    os.system("sed -i 's/"+filelist[len(filelist)]+".dat/XXXXX.dat/g' Modules/"+fortran+".f")
+    os.system("sed -i 's/npuls1="+Size[len(filelist)]+"/npuls1=100/g' Modules/"+fortran+".f") 
 
 def ReadAndCompileSingle(filename,program):
     """
@@ -68,9 +78,14 @@ def ReadAndCompileSingle(filename,program):
         print("The second argument must be 0 for peak_finder.f or 1 for phi_95.f")
         return 
 
+    df  = pd.read_csv("InputData/"+filename+".dat",delim_whitespace=True, header=None)
+    Size=str(len(df[0]))
+
+    os.system("sed -i 's/npuls1=100/npuls1="+Size+"/g' Modules/"+fortran+".f")
     os.system("sed -i 's/XXXXX.dat/"+filename+".dat/g' CompactGithub/"+fortran+".f")
     os.system("gfortran -o FortranBinaries/"+filename+"_"+fortran+".out Modules/"+fortran+".f `cernlib -safe mathlib`")
-
+    os.system("sed -i 's/"+filename+".dat/XXXXX.dat/g' CompactGithub/"+fortran+".f")
+    os.system("sed -i 's/npuls1="+Size+"/npuls1=100/g' Modules/"+fortran+".f")
 
 def RunMultiple(filelist,program):
     """
@@ -169,7 +184,7 @@ def SaveResult(m_a, g_a):
     g_95.to_csv('Output/Files/Result.dat', header=None, index=None, sep ='\t')
 
 def AreTherePeaks(file_name):
-    df_Peaks  = pd.read_csv("Data/pLS_peaks_"+source+".dat",delim_whitespace=True, header=None)
+    df_Peaks  = pd.read_csv("Output/Files/pLS_peaks_"+source+".dat",delim_whitespace=True, header=None)
     nu = ' '.join(str(e) for e in df_Peaks[1])
     if nu:
         print("In "+file_name+" I have found peaks at "+nu+" days^-1")

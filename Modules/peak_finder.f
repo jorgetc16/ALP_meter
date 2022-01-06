@@ -32,10 +32,7 @@
 
       parameter (pi=3.141592654d0)
       parameter (n0=5,nhist=20,nmc=1000)
-      parameter (npuls1=393,npuls2=125,npuls3=47,npuls4=84,npuls5=78,
-     &npuls6=110,npuls7=103,npuls8=101,npuls9=98,npuls10=112,npuls11=70,
-     &npuls12=22,npuls13=104,npuls14=74,npuls15=59,npuls16=173,
-     &npuls17=74,npuls18=100,npuls19=62,npuls20=67,npuls21=500) !Number of data points of each pulsar
+      parameter (npuls1=100) !Number of data points of each pulsar
       dimension tobs(10000),yobs(10000),syobs(10000)
       dimension ysint(10000),sysint(10000),ysint2(10000)
       dimension wi(10000)

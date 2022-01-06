@@ -39,16 +39,11 @@ c      double precision Tmax,Tmin,logTmax,logTmin,dlogT,logT ! Scan in Period
       common /datas/tobs,nobs
       common /mc/nu,pLSdata,nmc
 
-      parameter (n0=1,nsc=1)
-      parameter (npuls1=393,npuls2=125,npuls3=47,npuls4=84,npuls5=78,
-     &npuls6=110,npuls7=103,npuls8=101,npuls9=98,npuls10=112,npuls11=70,
-     &npuls12=22,npuls13=104,npuls14=74,npuls15=59,npuls16=173,
-     &npuls17=74,npuls18=100,npuls19=62,npuls20=67,npuls21=1099)
-
+      parameter (n0=5,nsc=100, npuls1=100)
 
       dimension tobs(10000),yobs(10000),syobs(10000)
       dimension wi(10000)
-      dimension hist(1000),shist(1000),histaux(1000),shistaux(1000)
+      dimension hist(3000),shist(3000),histaux(3000),shistaux(3000)
 
       parameter (pi=3.141592654d0)
 
@@ -60,9 +55,9 @@ c      double precision Tmax,Tmin,logTmax,logTmin,dlogT,logT ! Scan in Period
 *                                                                       *
 *************************************************************************
       nobs=npuls1
-      open(1,file='InputData/XXXXX.dat'
+      open(1,file='InputData/J00010.dat'
      & ,status='old') ! Data time series
-      open(2,file='Output/Files/phi95_XXXXX.dat')
+      open(2,file='Output/Files/phi95_J00010.dat')
 
 *************************************************************************
 *************************************************************************
@@ -70,9 +65,9 @@ c      double precision Tmax,Tmin,logTmax,logTmin,dlogT,logT ! Scan in Period
       nhist=20
       
       nmc=3000
-      numax=3.0081532001495361 ! days^-1 maximum frequency
+      numax=20.d0*2.d0*pi ! days^-1 maximum frequency
       phi0=0.d0 ! minimum possible value of phi
-      phi1=10.d0 ! maximum possible value of phi
+      phi1=30.d0 ! maximum possible value of phi
       eps=1.d-4
       maxf=30
 
@@ -103,7 +98,7 @@ c      double precision Tmax,Tmin,logTmax,logTmin,dlogT,logT ! Scan in Period
       enddo
 
 
-      numin=3.0081532001495361!Minimum frequency
+      numin=2.d0*pi/tobs(nobs)!Minimum frequency
       dnu=1.d0!Frequency resolution
       ntot=1!Total number of frequencies
 
