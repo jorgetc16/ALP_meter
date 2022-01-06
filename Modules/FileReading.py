@@ -168,3 +168,10 @@ def SaveResult(m_a, g_a):
     g_95 = pd.DataFrame({'m_a': m_a,  'g': g_a})
     g_95.to_csv('Output/Files/Result.dat', header=None, index=None, sep ='\t')
 
+def AreTherePeaks(file_name):
+    df_Peaks  = pd.read_csv("Data/pLS_peaks_"+source+".dat",delim_whitespace=True, header=None)
+    nu = ' '.join(str(e) for e in df_Peaks[1])
+    if nu:
+        print("In "+file_name+" I have found peaks at "+nu+" days^-1")
+    else:
+        print("In "+file_name+" I did not find any peak")

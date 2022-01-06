@@ -113,3 +113,68 @@ def plot_bound(m_a, g_a, x_range, y_range, file_name, label_name, color_plot):
     ### Save the figure ###
     plt.savefig('Output/Figures/'+file_name+'.pdf')
 
+
+
+def plot_periodogram(source, file_name, label_name):
+    """
+        Plots the LS periodogram and the 68, 95, and 99% FAP.
+
+        Parameters
+        ----------
+        source : string
+            The name of the source as written in the file, e.g. "J2170+1244" from ""J2170+1244.dat".
+        file_name : string
+            The name of the file to be saved.
+        label_name : string
+            The name of the source to appear in the plot, e.g. "J2170+1244".
+    """
+    df_PLS  = pd.read_csv("Data/pLS_"+source+".dat",delim_whitespace=True, header=None)
+    df_FAP  = pd.read_csv("Data/pLS_boots_"+source+".dat",delim_whitespace=True, header=None)
+
+    nu  = df_PLS[0] 
+    LS  = df_PLS[1]
+
+    sig68   = df_FAP[0]
+    sig95   = df_FAP[1] 
+    sig99   = df_FAP[2] 
+    
+    fig, ax = plt.subplots()
+
+    x_range = [nu[0],nu[len(nu)]]
+    y_range = [0,max(LS)+0.5*max(LS)]
+    
+    plt.plot(nu, LS)
+    
+    plt.plot([x_range[0], x_range[1]],[sig99, sig99], ':', c='red')
+    plt.plot([x_range[0], x_range[1]],[sig95, sig95], '--', c='red')
+    plt.plot([x_range[0], x_range[1]],[sig68, sig68], '-r', c='red')
+
+
+
+    ax.set_ylim([y_range[0], y_range[1]])
+    ax.set_xlim([x_range[0], x_range[1]])
+
+    plt.xscale('log')
+
+
+
+    ax.set_xlabel(r'$\nu$ [day$^{-1}$]',fontsize=36)
+    ax.set_ylabel(r'$P_{LS}(\nu)$',fontsize=36)
+
+
+
+
+    plt.xticks(fontsize=30)
+    plt.yticks(fontsize=30)
+
+
+    plt.annotate(r"\texttt{"+label_name+r"} no iono.",xy=(0.7*x_range[1],0.7*y_range[1]), fontsize=30)
+
+    plt.tick_params(labelbottom=True, labeltop=False, labelleft=True, labelright=False,
+                        bottom=True, top=True, left=True, right=True, direction='in',which='both', pad=5.5,width=1)
+
+
+    fig.set_size_inches(11.5, 7.5)
+
+
+    plt.savefig('Output/Figures/'+file_name+'.pdf')

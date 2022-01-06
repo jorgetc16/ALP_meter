@@ -15,4 +15,9 @@ file.ReadAndCompileMultiple(filelist,0)
 file.RunMultiple(filelist,0)
 #We are searching for peaks so we are interested in running the peak_finder.f file, therefore second argument is 0
 
+for i in range(len(filelist)):
+    plot.plot_periodogram(filelist[i],"periodogram"+filelist[i],filelist[i])
 
+
+for i in range(len(filelist)):
+    file.AreTherePeaks(filelist[i])
