@@ -1,7 +1,7 @@
 import os
 import pandas as pd
-from Modules.StatsFunctions import sigray
-
+import Module.StatsFunctions as stat
+import numpy as np
 
 def ReadAndCompileMultiple(filelist,program):
     """
@@ -37,20 +37,20 @@ def ReadAndCompileMultiple(filelist,program):
     Size=[]
     Size.append(str(len(df[0])))
 
-    os.system("sed -i 's/npuls1=100/npuls1="+Size[0]+"/g' Modules/"+fortran+".f")
-    os.system("sed -i 's/XXXXX.dat/"+filelist[0]+".dat/g' Modules/"+fortran+".f")
-    os.system("gfortran -o FortranBinaries/"+filelist[0]+"_"+fortran+".out Modules/"+fortran+".f `cernlib -safe mathlib`")
+    os.system("sed -i 's/npuls1=100/npuls1="+Size[0]+"/g' Module/"+fortran+".f")
+    os.system("sed -i 's/XXXXX.dat/"+filelist[0]+".dat/g' Module/"+fortran+".f")
+    os.system("gfortran -o FortranBinaries/"+filelist[0]+"_"+fortran+".out Module/"+fortran+".f `cernlib -safe mathlib`")
 
     for i in range(len(filelist)-1):
         df  = pd.read_csv("InputData/"+filelist[i+1]+".dat",delim_whitespace=True, header=None)
         Size.append(str(len(df[0])))
 
-        os.system("sed -i 's/npuls1="+Size[i]+"/npuls1="+Size[i+1]+"/g' Modules/"+fortran+".f")    
-        os.system("sed -i 's/"+filelist[i]+".dat/"+filelist[i+1]+".dat/g' Modules/"+fortran+".f")
-        os.system("gfortran -o FortranBinaries/"+filelist[i+1]+"_"+fortran+".out Modules/"+fortran+".f `cernlib -safe mathlib`")
+        os.system("sed -i 's/npuls1="+Size[i]+"/npuls1="+Size[i+1]+"/g' Module/"+fortran+".f")    
+        os.system("sed -i 's/"+filelist[i]+".dat/"+filelist[i+1]+".dat/g' Module/"+fortran+".f")
+        os.system("gfortran -o FortranBinaries/"+filelist[i+1]+"_"+fortran+".out Module/"+fortran+".f `cernlib -safe mathlib`")
     
-    os.system("sed -i 's/"+filelist[len(filelist)]+".dat/XXXXX.dat/g' Modules/"+fortran+".f")
-    os.system("sed -i 's/npuls1="+Size[len(filelist)]+"/npuls1=100/g' Modules/"+fortran+".f") 
+    os.system("sed -i 's/"+filelist[len(filelist)-1]+".dat/XXXXX.dat/g' Module/"+fortran+".f")
+    os.system("sed -i 's/npuls1="+Size[len(filelist)-1]+"/npuls1=100/g' Module/"+fortran+".f") 
 
 def ReadAndCompileSingle(filename,program):
     """
@@ -81,11 +81,11 @@ def ReadAndCompileSingle(filename,program):
     df  = pd.read_csv("InputData/"+filename+".dat",delim_whitespace=True, header=None)
     Size=str(len(df[0]))
 
-    os.system("sed -i 's/npuls1=100/npuls1="+Size+"/g' Modules/"+fortran+".f")
+    os.system("sed -i 's/npuls1=100/npuls1="+Size+"/g' Module/"+fortran+".f")
     os.system("sed -i 's/XXXXX.dat/"+filename+".dat/g' CompactGithub/"+fortran+".f")
-    os.system("gfortran -o FortranBinaries/"+filename+"_"+fortran+".out Modules/"+fortran+".f `cernlib -safe mathlib`")
+    os.system("gfortran -o FortranBinaries/"+filename+"_"+fortran+".out Module/"+fortran+".f `cernlib -safe mathlib`")
     os.system("sed -i 's/"+filename+".dat/XXXXX.dat/g' CompactGithub/"+fortran+".f")
-    os.system("sed -i 's/npuls1="+Size+"/npuls1=100/g' Modules/"+fortran+".f")
+    os.system("sed -i 's/npuls1="+Size+"/npuls1=100/g' Module/"+fortran+".f")
 
 def RunMultiple(filelist,program):
     """
@@ -155,9 +155,10 @@ def RunSingle(filename,program):
 
 
 def GetScale(filelist):
-    df_si = pd.DataFrame()
+    nu = np.array([])
+    sigma_array = []
     sk=0
-    W=13
+    W=5
     MP=2
     wt=None
 
@@ -168,15 +169,13 @@ def GetScale(filelist):
         phi_95 = df_Pul.rolling(W, min_periods=MP,win_type=wt).mean()[1]       
 
         if i == 0:
-            nu = pd.DataFrame({"nu": nu_Pul})
-            df_si.append(nu)
+            nu = nu_Pul.to_numpy()
+        Phi = stat.sigray(phi_95).to_numpy()
+        sigma_array.append(Phi)
 
-        Phi = pd.DataFrame({"Pulsar"+filelist[i]: sigray(phi_95)})
-        df_si.append(Phi)
-
-    nu = df_si.iloc[0:,0].to_numpy()
-    sigma_array = df_si.iloc[0:,1:].to_numpy()
-    return nu, sigma_array
+    sigma_array = np.nan_to_num(np.array(sigma_array), False, 1000)
+    
+    return nu, sigma_array 
 
 def SaveResult(m_a, g_a):
 
@@ -184,7 +183,7 @@ def SaveResult(m_a, g_a):
     g_95.to_csv('Output/Files/Result.dat', header=None, index=None, sep ='\t')
 
 def AreTherePeaks(file_name):
-    df_Peaks  = pd.read_csv("Output/Files/pLS_peaks_"+source+".dat",delim_whitespace=True, header=None)
+    df_Peaks  = pd.read_csv("Output/Files/pLS_peaks_"+file_name+".dat",delim_whitespace=True, header=None)
     nu = ' '.join(str(e) for e in df_Peaks[1])
     if nu:
         print("In "+file_name+" I have found peaks at "+nu+" days^-1")

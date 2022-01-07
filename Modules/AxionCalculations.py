@@ -1,6 +1,6 @@
 import numpy as np
 from numba import njit
-import Modules.StatsFunctions as St
+import Module.StatsFunctions as St
 
 @njit
 def gsto_nb(rho_s, rho_o, alpha_s, alpha_o, m_a, phi, delta):
@@ -146,11 +146,11 @@ def loop(n_sources, n_universes, m_a, sigma_array, rho, n_nu):
             g_universe_pulsars = []
             delta_g_universe_pulsars = []
             for j in range(n_sources):
-                phi_pulsar = np.random.rayleigh(sigma_array[k][j])
-                var_pulsar = np.sqrt(2-np.pi/2)*sigma_array[k][j]
+                phi_pulsar = np.random.rayleigh(sigma_array[j][k])
+                var_pulsar = np.sqrt(2-np.pi/2)*sigma_array[j][k]
                 delta = np.random.uniform(0,2*np.pi)
-                gp = gsto_nb([rho[j+1], rho[0], alpha_pulsar[j+1],alpha_pulsar[0], m_a[k], phi_pulsar,delta])
-                dp = dsto_nb([rho[j+1], rho[0], alpha_pulsar[j+1],alpha_pulsar[0], m_a[k], var_pulsar,delta])
+                gp = gsto_nb(rho[j+1], rho[0], alpha_pulsar[j+1],alpha_pulsar[0], m_a[k], phi_pulsar,delta)
+                dp = dsto_nb(rho[j+1], rho[0], alpha_pulsar[j+1],alpha_pulsar[0], m_a[k], var_pulsar,delta)
                 g_universe_pulsars.append(gp)
                 delta_g_universe_pulsars.append(dp)
 

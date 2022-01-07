@@ -80,7 +80,7 @@ def plot_bound(m_a, g_a, x_range, y_range, file_name, label_name, color_plot):
     ## Keck-BICEP arXiv:2108.03316##
 
     plt.plot(m_Keck_Low, g_Keck_Low, '--', alpha=.8, color='forestgreen')
-    plt.fill_between(m_Keck_Low, g_Keck_Low, 1)
+    plt.fill_between(m_Keck_Low, g_Keck_Low, 1, color='forestgreen', alpha=.1)
     plt.plot(m_Keck_High, g_Keck_High, '--', alpha=.8, color='forestgreen')
     plt.fill_between(m_Keck_High, g_Keck_High, 1,
                     color='forestgreen', alpha=.1, label='Keck-BICEP')
@@ -97,6 +97,9 @@ def plot_bound(m_a, g_a, x_range, y_range, file_name, label_name, color_plot):
     ax.set_xlabel(r'$m_a$ [$10^{-22}$ eV]', fontsize=34)
     ax.set_ylabel(r'$g_{a \gamma}$ [GeV$^{-1}]$', fontsize=34)
 
+    plt.xscale('log')
+    plt.yscale('log')
+
     ax.set_ylim([y_range[0], y_range[1]])
     ax.set_xlim([x_range[0], x_range[1]])
 
@@ -110,6 +113,7 @@ def plot_bound(m_a, g_a, x_range, y_range, file_name, label_name, color_plot):
     ### Plot legend ###
     plt.legend()
 
+    fig.set_size_inches(14.5, 10.5)
     ### Save the figure ###
     plt.savefig('Output/Figures/'+file_name+'.pdf')
 
@@ -129,7 +133,7 @@ def plot_periodogram(source, file_name, label_name):
             The name of the source to appear in the plot, e.g. "J2170+1244".
     """
     df_PLS  = pd.read_csv("Output/Files/pLS_"+source+".dat",delim_whitespace=True, header=None)
-    df_FAP  = pd.read_csv("Output/Files/pLS_boots_"+source+".dat",delim_whitespace=True, header=None)
+    df_FAP  = pd.read_csv("Output/Files/pLS_FAP_"+source+".dat",delim_whitespace=True, header=None)
 
     nu  = df_PLS[0] 
     LS  = df_PLS[1]
@@ -140,14 +144,14 @@ def plot_periodogram(source, file_name, label_name):
     
     fig, ax = plt.subplots()
 
-    x_range = [nu[0],nu[len(nu)]]
+    x_range = [nu[0],nu[len(nu)-1]]
     y_range = [0,max(LS)+0.5*max(LS)]
     
     plt.plot(nu, LS)
     
     plt.plot([x_range[0], x_range[1]],[sig99, sig99], ':', c='red')
     plt.plot([x_range[0], x_range[1]],[sig95, sig95], '--', c='red')
-    plt.plot([x_range[0], x_range[1]],[sig68, sig68], '-r', c='red')
+    plt.plot([x_range[0], x_range[1]],[sig68, sig68], '-', c='red')
 
 
 
@@ -168,13 +172,13 @@ def plot_periodogram(source, file_name, label_name):
     plt.yticks(fontsize=30)
 
 
-    plt.annotate(r"\texttt{"+label_name+r"} no iono.",xy=(0.7*x_range[1],0.7*y_range[1]), fontsize=30)
+    plt.annotate("\texttt{"+label_name+"}",xy=(0.4*x_range[1],0.8*y_range[1]), fontsize=26)
 
     plt.tick_params(labelbottom=True, labeltop=False, labelleft=True, labelright=False,
                         bottom=True, top=True, left=True, right=True, direction='in',which='both', pad=5.5,width=1)
 
 
-    fig.set_size_inches(11.5, 7.5)
+    fig.set_size_inches(14.5, 10.5)
 
 
     plt.savefig('Output/Figures/'+file_name+'.pdf')

@@ -43,7 +43,7 @@ c      double precision Tmax,Tmin,logTmax,logTmin,dlogT,logT ! Scan in Period
 
       dimension tobs(10000),yobs(10000),syobs(10000)
       dimension wi(10000)
-      dimension hist(3000),shist(3000),histaux(3000),shistaux(3000)
+      dimension hist(1000),shist(1000),histaux(1000),shistaux(1000)
 
       parameter (pi=3.141592654d0)
 
@@ -55,9 +55,9 @@ c      double precision Tmax,Tmin,logTmax,logTmin,dlogT,logT ! Scan in Period
 *                                                                       *
 *************************************************************************
       nobs=npuls1
-      open(1,file='InputData/J00010.dat'
+      open(1,file='InputData/XXXXX.dat'
      & ,status='old') ! Data time series
-      open(2,file='Output/Files/phi95_J00010.dat')
+      open(2,file='Output/Files/phi95_XXXXX.dat')
 
 *************************************************************************
 *************************************************************************
@@ -98,7 +98,7 @@ c      double precision Tmax,Tmin,logTmax,logTmin,dlogT,logT ! Scan in Period
       enddo
 
 
-      numin=2.d0*pi/tobs(nobs)!Minimum frequency
+      numin=0.0036!Minimum frequency
       dnu=1.d0!Frequency resolution
       ntot=1!Total number of frequencies
 
