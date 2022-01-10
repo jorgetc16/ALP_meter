@@ -158,7 +158,7 @@ def GetScale(filelist):
     nu = np.array([])
     sigma_array = []
     sk=0
-    W=5
+    W=13
     MP=2
     wt=None
 
