@@ -10,10 +10,10 @@ import numpy as np
 filelist = ["J00001","J00002","J00003","J00004","J00005","J00006","J00007","J00008","J00009","J00010"]
 rho = np.array([0.35, 0.35, 0.29, 0.44, 0.35, 0.29, 0.44, 0.35, 0.29, 0.44, 0.35])
 
-# file.ReadAndCompileMultiple(filelist,1) 
+file.ReadAndCompileMultiple(filelist,1) 
 # #We are putting constraints so we are interested in running the phi95.f file, therefore second argument is 1
 
-# file.RunMultiple(filelist,1)
+file.RunMultiple(filelist,1)
 #We are putting constraints so we are interested in running the phi95.f file, therefore second argument is 1
 
 
