@@ -14,9 +14,7 @@
       program phi_limits
       implicit none
       double precision tobs,yobs,syobs, pi ! Input data vectors, time series, pol. angle and 1sigma error of the pol. angle
-      integer npuls1,npuls2,npuls3,npuls4,npuls5,npuls6,npuls7,nobs ! Input number of observations/length of vectors (list above)
-      integer npuls8,npuls9,npuls10,npuls11,npuls12,npuls13,npuls14
-      integer npuls15,npuls16,npuls17,npuls18,npuls19,npuls20,npuls21
+      integer npuls1,nobs ! Number of observations
       integer ntot,n0 ! Total number of iterations and sampling density
       integer nmc ! Total number MCs
       integer nsc ! Numbers of points in the scan of nu
@@ -24,7 +22,7 @@ c      double precision Tmax,Tmin,logTmax,logTmin,dlogT,logT ! Scan in Period
       double precision lognumax,lognumin,dlognu,lognu ! Scan in frequency
       integer ic,jc,kc ! Loop counters
       double precision dumb,dumbb,t0 ! Ancillary variable
-      real hist,shist,h0,h1,sh0,sh1,dh,dsh ! Histogram variables (must be real!)
+      real hist,shist,h0,h1,h2,sh0,sh1,dh,dsh ! Histogram variables (must be real!)
       real histaux,shistaux
       integer ihist,nhist ! Histogram variables
       double precision W,wi,nu,dnu,numin,numax
@@ -65,25 +63,22 @@ c      double precision Tmax,Tmin,logTmax,logTmin,dlogT,logT ! Scan in Period
       nhist=20
       
       nmc=3000
-      numax=20.d0*2.d0*pi ! days^-1 maximum frequency
       phi0=0.d0 ! minimum possible value of phi
       phi1=30.d0 ! maximum possible value of phi
       eps=1.d-4
       maxf=30
 
 
-*68
+*
 *
 *        >> Histogram
 *
-      do ic=1,nhist
-        hist(ic)=0.e0
-        shist(ic)=0.e0
-      enddo
+
 
 
       h0=1.e6
       h1=-1.e6
+      h2=1.e6
       sh0=1.e6
       sh1=-1.e6
 
@@ -96,84 +91,130 @@ c      double precision Tmax,Tmin,logTmax,logTmin,dlogT,logT ! Scan in Period
         if (syobs(ic).le.sh0) sh0=syobs(ic)
         if (syobs(ic).ge.sh1) sh1=syobs(ic)
       enddo
+      !We calculate the difference between all the t_obs and the next one and take the minimum
+      do ic=1,nobs-1
+            dumb=tobs(ic+1)-tobs(ic)
+            if (dumb.le.h2) h2=dumb
+      enddo
 
-
-      numin=0.0036!Minimum frequency
+      numax = 1/h2!maximum frequency
+      numin=1.d0/tobs(nobs) !Minimum frequency
       dnu=1.d0!Frequency resolution
       ntot=1!Total number of frequencies
 
-      dh=(h1-h0)/dfloat(nhist)
-      dsh=(sh1-sh0)/dfloat(nhist)
-      !print *,sh0,sh1,dsh
-      do ic=1,nobs
-        ihist=(yobs(ic)-h0)/dh
-        hist(ihist)=hist(ihist)+1.e0
-        ihist=(syobs(ic)-sh0)/dsh
-        shist(ihist)=shist(ihist)+1.e0
-      enddo
+      !We see wether sho and sh1 have the same value to determine if all the errors are the same
+      if (sh1.eq.sh0) then
+            do ic=1,nhist
+                  hist(ic)=0.e0
+            enddo
+            dh=(h1-h0)/dfloat(nhist)
+            !print *,sh0,sh1,dsh
+            do ic=1,nobs
+            ihist=(yobs(ic)-h0)/dh
+            hist(ihist)=hist(ihist)+1.e0
+            enddo
 
 
 *
 *       >> Calculate the cumulative distribution
 *
-      call RNHPRE(hist,nhist)
-      call RNHPRE(shist,nhist)      ! CERNLIB: Subroutines to initialize RNHRAN in function phi95f(x)
-      do ic=1,nhist
-        histaux(ic)=hist(ic)
-        shistaux(ic)=shist(ic)
-      enddo
+            call RNHPRE(hist,nhist)     ! CERNLIB: Subroutines to initialize RNHRAN in function phi95f(x)
+            do ic=1,nhist
+            histaux(ic)=hist(ic)
+            enddo
 *
 *   > Signal + given MC
 *
 
-c      Tmin=1.d0/numax              ! Scan in period
-c      Tmax=1.d0/numin
-c      logTmax=dlog10(Tmax)
-c      logTmin=dlog10(Tmin)
-c      dlogT=(logTmax-logTmin)/dfloat(nsc)
-      lognumax=dlog10(numax)
-      lognumin=dlog10(numin)
-      dlognu=(lognumax-lognumin)/dfloat(nsc)
 
-c      nu=3.80077d0                 ! Block to test a particular value of the periodogram data
-c      W=0.d0
-c      do ic=1,nobs
-c        wi(ic)=1.d0/syobs(ic)**2
-c        W=W+wi(ic)
-c      enddo
-c      do ic=1,nobs
-c        wi(ic)=wi(ic)/W
-c      enddo
-c
-c      pLSdata=pLS(nu,nobs,tobs,yobs,wi)
-c      print *,pLSdata
-c      stop
-      do kc=1,nsc+1
-        lognu=lognumin+dlognu*dfloat(kc-1)
-        nu=10.d0**lognu
-        W=0.d0
-        do ic=1,nobs
-            wi(ic)=1.d0/syobs(ic)**2
-            W=W+wi(ic)
-        enddo
-        do ic=1,nobs
-            wi(ic)=wi(ic)/W
-        enddo
-        
-        pLSdata=pLS(nu,nobs,tobs,yobs,wi)
+            lognumax=dlog10(numax)
+            lognumin=dlog10(numin)
+            dlognu=(lognumax-lognumin)/dfloat(nsc)
 
-        dumb=phi95f(phi0)
-        dumbb=phi95f(phi1)
-       if ((dumb*dumbb).ge.0.d0) then
-            print *,"Crap=",nu,pLSdata
-            write(2,*) nu,''
-            cycle
-        endif
-        phi95=dzerox(phi0,phi1,eps,maxf,phi95f,1)  ! CERNLIB: Subroutine to find a zero of an external function
-        print *, nu,phi95
-        write(2,*) nu,phi95
-      enddo
-      close(2)
+
+            do kc=1,nsc+1
+            lognu=lognumin+dlognu*dfloat(kc-1)
+            nu=10.d0**lognu
+            do ic=1,nobs
+                  wi(ic)=1.d0
+            enddo
+            
+            pLSdata=pLS(nu,nobs,tobs,yobs,wi)
+
+            dumb=phi95f(phi0)
+            dumbb=phi95f(phi1)
+            if ((dumb*dumbb).ge.0.d0) then
+                  print *,"Crap=",nu,pLSdata
+                  write(2,*) nu,''
+                  cycle
+            endif
+            phi95=dzerox(phi0,phi1,eps,maxf,phi95f,1)  ! CERNLIB: Subroutine to find a zero of an external function
+            print *, nu,phi95
+            write(2,*) nu,phi95
+            enddo
+            close(2)
+      else 
+            do ic=1,nhist
+                  hist(ic)=0.e0
+                  shist(ic)=0.e0
+            enddo
+            dh=(h1-h0)/dfloat(nhist)
+            dsh=(sh1-sh0)/dfloat(nhist)
+            !print *,sh0,sh1,dsh
+            do ic=1,nobs
+            ihist=(yobs(ic)-h0)/dh
+            hist(ihist)=hist(ihist)+1.e0
+            ihist=(syobs(ic)-sh0)/dsh
+            shist(ihist)=shist(ihist)+1.e0
+            enddo
+
+
+*
+*       >> Calculate the cumulative distribution
+*
+            call RNHPRE(hist,nhist)
+            call RNHPRE(shist,nhist)      ! CERNLIB: Subroutines to initialize RNHRAN in function phi95f(x)
+            do ic=1,nhist
+            histaux(ic)=hist(ic)
+            shistaux(ic)=shist(ic)
+            enddo
+*
+*   > Signal + given MC
+*
+
+
+            lognumax=dlog10(numax)
+            lognumin=dlog10(numin)
+            dlognu=(lognumax-lognumin)/dfloat(nsc)
+
+
+            do kc=1,nsc+1
+            lognu=lognumin+dlognu*dfloat(kc-1)
+            nu=10.d0**lognu
+            W=0.d0
+            do ic=1,nobs
+                  wi(ic)=1.d0/syobs(ic)**2
+                  W=W+wi(ic)
+            enddo
+            do ic=1,nobs
+                  wi(ic)=wi(ic)/W
+            enddo
+            
+            pLSdata=pLS(nu,nobs,tobs,yobs,wi)
+
+            dumb=phi95f(phi0)
+            dumbb=phi95f(phi1)
+            if ((dumb*dumbb).ge.0.d0) then
+                  print *,"Crap=",nu,pLSdata
+                  write(2,*) nu,''
+                  cycle
+            endif
+            phi95=dzerox(phi0,phi1,eps,maxf,phi95f,1)  ! CERNLIB: Subroutine to find a zero of an external function
+            print *, nu,phi95
+            write(2,*) nu,phi95
+            enddo
+            close(2)
+      endif
       stop
       end
 

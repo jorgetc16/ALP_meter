@@ -7,7 +7,7 @@ import numpy as np
 
 #First we fill the list with the name of the data files (the extension asumed is .dat, if is anjother it should be changed in all the modules)
 #and the dark matter density for the earth (first entry) and tçfor each of the sources (in the same order as the filelist)
-filelist = ["J00002","J00007","J00008"]
+filelist = ["J00001","J00007","J00008"]
 
 file.ReadAndCompileMultiple(filelist,0) 
 #We are searching for peaks so we are interested in running the peak_finder.f file, therefore second argument is 0
